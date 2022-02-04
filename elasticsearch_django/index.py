@@ -7,11 +7,11 @@ from .settings import get_setting, get_index_mapping, get_index_models, get_clie
 logger = logging.getLogger(__name__)
 
 
-def create_index(index):
+def create_index(index, **kwargs):
     """Create an index and apply mapping if appropriate."""
     logger.info("Creating search index: '%s'", index)
     client = get_client()
-    return client.indices.create(index=index, body=get_index_mapping(index))
+    return client.indices.create(index=index, body=get_index_mapping(index), **kwargs)
 
 
 def update_index(index):

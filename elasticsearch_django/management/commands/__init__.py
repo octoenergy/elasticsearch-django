@@ -29,6 +29,13 @@ class BaseSearchCommand(BaseCommand):
             help="Do no display user prompts - may affect data.",
         )
         parser.add_argument(
+            "-i",
+            "--include_type_name",
+            action="store_true",
+            dest="include_type_name",
+            help="Run create_search_index with include_type_name=True.",
+        )
+        parser.add_argument(
             "indexes", nargs="*", help="Names of indexes on which to run the command."
         )
 
@@ -38,12 +45,15 @@ class BaseSearchCommand(BaseCommand):
 
     def handle(self, *args, **options):
         """Run do_index_command on each specified index and log the output."""
+        index_options = {
+            "include_type_name": "true" if options.pop("include_type_name") else "false"
+        }
         for index in options.pop("indexes"):
             data = {}
-            try:
-                data = self.do_index_command(index, **options)
-            except TransportError as ex:
-                logger.warning("ElasticSearch threw an error: %s", ex)
-                data = {"index": index, "status": ex.status_code, "reason": ex.error}
-            finally:
-                logger.info(data)
+        try:
+            data = self.do_index_command(index, **index_options)
+        except TransportError as ex:
+            logger.warning("ElasticSearch threw an error: %s", ex)
+            data = {"index": index, "status": ex.status_code, "reason": ex.error}
+        finally:
+            logger.info(data)
